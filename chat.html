@@ -20,11 +20,6 @@
             50% { transform: translateY(-4px) rotate(1deg); }
         }
         .animar-flotar { animation: flotar 3s ease-in-out infinite; }
-        @keyframes latido {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .animar-voz { animation: latido 0.8s ease-in-out infinite; }
         .boton-tactil { min-width: 64px; min-height: 64px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         *:focus-visible { outline: 5px solid #FDE047; outline-offset: 3px; }
     </style>
@@ -50,7 +45,7 @@
                 ¡Pregúntale a Doctor Cito! 🧠✨
             </h1>
             <p class="text-white text-base sm:text-xl font-medium drop-shadow mt-1">
-                ¡Escribe, dibuja o habla con Doctor Cito sobre tu cuerpo!
+                ¡Escribe una duda sobre tu cuerpo o pídele que dibuje algo asombroso!
             </p>
         </div>
 
@@ -60,25 +55,21 @@
             <div class="flex items-start gap-3">
                 <div class="bg-purple-600 text-white p-3 rounded-full text-2xl shadow-md">🤖</div>
                 <div class="bg-purple-100 text-purple-950 p-4 rounded-3xl rounded-tl-none border-2 border-purple-200 shadow-sm text-base sm:text-xl max-w-[80%] font-medium">
-                    ¡Hola amiguito! Soy Doctor Cito. Puedes escribirme, pedirme dibujos o tocar el micrófono 🎙️ para hablar conmigo. 🎨🌟
+                    ¡Hola amiguito! Soy Doctor Cito, tu asistente mágico. ¿Qué quieres aprender hoy o qué imagen te gustaría que cree para ti? 🎨🌟
                 </div>
             </div>
         </div>
 
-        <!-- Formulario de Entrada (Pregunta, Imagen o Voz) -->
+        <!-- Formulario de Entrada (Pregunta o Imagen) -->
         <div class="w-full bg-white p-3 sm:p-4 rounded-3xl border-4 border-yellow-300 shadow-xl flex flex-col sm:flex-row gap-2">
-            <input type="text" id="userInput" placeholder="Ej: ¿Qué hacen los pulmones? o Dibuja un corazón" 
+            <input type="text" id="userInput" placeholder="Ej: ¿Por qué late el corazón? o Dibuja un cerebro feliz" 
                 class="flex-grow bg-sky-50 border-3 border-sky-200 rounded-2xl px-4 py-3 text-purple-950 placeholder-purple-300 font-medium text-base sm:text-xl focus:outline-none focus:border-yellow-400">
-            
-            <div class="flex gap-2 justify-end flex-wrap">
-                <button onclick="enviarMensaje(false)" title="Preguntar texto" class="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-300 text-white font-bold px-4 py-3 rounded-2xl shadow-md text-base sm:text-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1">
+            <div class="flex gap-2 justify-end">
+                <button onclick="enviarMensaje(false)" class="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-300 text-white font-bold px-5 py-3 rounded-2xl shadow-md text-base sm:text-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1">
                     💬 Preguntar
                 </button>
-                <button onclick="enviarMensaje(true)" title="Crear Imagen" class="bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-300 text-white font-bold px-4 py-3 rounded-2xl shadow-md text-base sm:text-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1">
-                    🎨 Imagen
-                </button>
-                <button id="btnVoz" onclick="iniciarEscuchaVoz()" title="Hablar por voz" class="bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 text-white font-bold px-4 py-3 rounded-2xl shadow-md text-base sm:text-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1">
-                    🎙️ Hablar
+                <button onclick="enviarMensaje(true)" class="bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-300 text-white font-bold px-5 py-3 rounded-2xl shadow-md text-base sm:text-lg cursor-pointer transition-all active:scale-95 flex items-center gap-1">
+                    🎨 ¡Crear Imagen!
                 </button>
             </div>
         </div>
@@ -90,13 +81,13 @@
         🌟 Impulsado por Google Gemini 🌟
     </div>
 
-    <!-- Lógica de conexión con la API de Gemini y Reconocimiento de Voz -->
+    <!-- Lógica de conexión con la API de Gemini -->
     <script>
         const GEMINI_API_KEY = "AIzaSyA_placeholder_key_demo_local_system";
 
-        async function enviarMensaje(esImagen, textoForzado = null) {
+        async function enviarMensaje(esImagen) {
             const input = document.getElementById('userInput');
-            const texto = textoForzado ? textoForzado : input.value.trim();
+            const texto = input.value.trim();
             if (!texto) return;
 
             const chatContainer = document.getElementById('chat-container');
@@ -148,7 +139,6 @@
                         </div>
                     `;
                     chatContainer.appendChild(botBubble);
-                    reproducirVoz(`¡Mira la imagen mágica que creé para ti sobre ${texto}!`);
                 } else {
                     const respuestaTexto = await consultarTextoGemini(texto);
                     document.getElementById(loadingId).remove();
@@ -162,7 +152,6 @@
                         </div>
                     `;
                     chatContainer.appendChild(botBubble);
-                    reproducirVoz(respuestaTexto);
                 }
             } catch (error) {
                 document.getElementById(loadingId).remove();
@@ -178,7 +167,6 @@
                     </div>
                 `;
                 chatContainer.appendChild(botBubble);
-                reproducirVoz(respuestaSimulada);
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -205,71 +193,16 @@
         function obtenerRespuestaEducativaMock(texto) {
             const t = texto.toLowerCase();
             if (t.includes('corazon') || t.includes('latir') || t.includes('corazón')) {
-                return "¡El corazón late como un tambor feliz en tu pecho para darte mucha energía y correr a jugar!";
+                return "¡El corazón late como un tambor feliz en tu pecho para darte mucha energía y correr a jugar! ❤️🫀";
             } else if (t.includes('pulmon') || t.includes('pulmón') || t.includes('respirar') || t.includes('aire')) {
-                return "¡Los pulmones son como dos globitos mágicos dentro de tu pecho que se inflan al tomar aire!";
+                return "¡Los pulmones son como dos globitos mágicos dentro de tu pecho! Se inflan cuando tomas aire fresquito y se desinflan cuando suspiras. 🌬️🎈";
             } else if (t.includes('cerebro') || t.includes('pensar')) {
-                return "¡Tu cerebro es el rey mago de tu cabeza que te ayuda a aprender, jugar y soñar!";
+                return "¡Tu cerebro es el rey mago de tu cabeza que te ayuda a aprender, jugar y soñar cositas hermosas! 🧠✨";
             } else if (t.includes('estomago') || t.includes('comida') || t.includes('estómago')) {
-                return "¡Tu pancita guarda la rica comidita para transformarla en súper poderes y saltar muy alto!";
+                return "¡Tu pancita guarda la rica comidita para transformarla en súper poderes y saltar muy alto! 🍎💪";
             } else {
-                return `¡Qué pregunta tan divertida sobre ${texto}! Tu cuerpito es una obra de arte mágica y perfecta.`;
+                return `¡Qué pregunta tan divertida sobre "${texto}"! Tu cuerpito es una obra de arte mágica y perfecta que funciona como un superhéroe. 🌟🩺`;
             }
-        }
-
-        // --- FUNCIONES DE VOZ (Reconocimiento y Síntesis) ---
-        function iniciarEscuchaVoz() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("¡Ups! Tu navegador no soporta el reconocimiento de voz. Prueba usando Google Chrome.");
-                return;
-            }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-ES';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            const btnVoz = document.getElementById('btnVoz');
-            btnVoz.classList.add('animar-voz', 'bg-red-500');
-            btnVoz.innerText = "🎙️ Escuchando...";
-
-            recognition.start();
-
-            recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                document.getElementById('userInput').value = speechResult;
-                restaurarBotonVoz();
-                enviarMensaje(false, speechResult); // Enviar automáticamente lo que habló
-            };
-
-            recognition.onerror = function(event) {
-                restaurarBotonVoz();
-            };
-
-            recognition.onspeechend = function() {
-                restaurarBotonVoz();
-            };
-        }
-
-        function restaurarBotonVoz() {
-            const btnVoz = document.getElementById('btnVoz');
-            btnVoz.classList.remove('animar-voz', 'bg-red-500');
-            btnVoz.innerHTML = "🎙️ Hablar";
-        }
-
-        function reproducirVoz(texto) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel(); // Detener voz anterior si la hay
-            
-            // Limpiar emojis para que la voz no los lea raro
-            const textoLimpio = texto.replace(/[\u{1F000}-\u{1F9FF}[:emoji:]]/gu, '');
-            const utterance = new SpeechSynthesisUtterance(textoLimpio);
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.95; // Ligeramente más pausado para niños
-            utterance.pitch = 1.2;  // Tono un poco más amigable/infantil
-            
-            window.speechSynthesis.speak(utterance);
         }
 
         function escapeHtml(text) {
